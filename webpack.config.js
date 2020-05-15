@@ -77,7 +77,7 @@ module.exports = {
         new CopyPlugin([
             {from: __dirname + '/src/appointmentStatusHandler.js', to: distDirPath + '/appointmentStatusHandler.js'},
             {from: __dirname + '/i18n/', to: distDirPath + '/i18n'},
-            {from: __dirname + '/constants/', to: distDirPath + '/constants'},
+            {from: __dirname + '/config/', to: distDirPath + '/config'},
         ])
     ]
 }
