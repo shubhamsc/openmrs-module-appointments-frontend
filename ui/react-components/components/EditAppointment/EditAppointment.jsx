@@ -120,6 +120,8 @@ const EditAppointment = props => {
     const [originalOccurrences, setOriginalOccurrences] = useState(undefined);
     const [applyForAll, setApplyForAll] = useState(false);
     const [serviceErrorMessage, setServiceErrorMessage] = useState('');
+    const [existingProvidersUuids, setExistingProvidersUuids] = useState([]);
+    const [appointmentTimeBeforeEdit, setAppointmentTimeBeforeEdit] = useState({});
 
     const isRecurringAppointment = () => appointmentDetails.appointmentType === RECURRING_APPOINTMENT_TYPE;
     const isWalkInAppointment = () => appointmentDetails.appointmentType === WALK_IN_APPOINTMENT_TYPE;
@@ -132,6 +134,15 @@ const EditAppointment = props => {
     });
 
     const updateAppointmentDetails = modifiedAppointmentDetails => setAppointmentDetails(prevAppointmentDetails => {
+        let appointmentTimeBeforeEdit = {
+            date: prevAppointmentDetails.appointmentDate,
+            startTime: prevAppointmentDetails.startTime,
+            endTime: prevAppointmentDetails.endTime,
+        };
+        let existingProvidersUuids = _.filter(prevAppointmentDetails.providers, isActiveProvider)
+            .map(provider => provider.uuid);
+        setAppointmentTimeBeforeEdit(appointmentTimeBeforeEdit);
+        setExistingProvidersUuids(existingProvidersUuids);
         return {...prevAppointmentDetails, ...modifiedAppointmentDetails}
     });
 
@@ -238,7 +249,62 @@ const EditAppointment = props => {
         setShowUpdateSuccessPopup(true);
     };
 
+    const isActiveProvider = function (provider) {
+        return provider.response !== Bahmni.Appointments.Constants.providerResponses.CANCELLED;
+    };
+
+    const isRescheduled = function (appointmentTimeBeforeEdit) {
+        if (!moment(appointmentDetails.appointmentDate).isSame(moment(appointmentTimeBeforeEdit.date))) {
+            return true;
+        }
+        const newStart = moment(appointmentDetails.startTime, 'hh:mm a');
+        const previousStart = moment(appointmentTimeBeforeEdit.startTime, 'hh:mm a');
+        const newEnd = moment(appointmentDetails.endTime, 'hh:mm a');
+        const previousEnd = moment(appointmentTimeBeforeEdit.endTime, 'hh:mm a');
+
+        const isSameStart = newStart.isSame(previousStart, 'minutes');
+        const isSameEnd = newEnd.isSame(previousEnd, 'minutes');
+        return !(isSameStart && isSameEnd);
+    };
+
+    const updateProviderResponse = function (appointmentRequest, updatedProviders) {
+        _.each(appointmentRequest.providers, function (providerInAppointment) {
+            if (isActiveProvider(providerInAppointment)){
+                const updatedProvider = _.find(updatedProviders, function (providerWithUpdatedResponse) {
+                    return providerWithUpdatedResponse.uuid === providerInAppointment.uuid;
+                });
+                if (!_.isUndefined(updatedProvider)){
+                    providerInAppointment.response = updatedProvider.response;
+                }
+            }
+        });
+    };
+
+    const updateStatusAndProviderResponse = function(appointmentRequest, existingProvidersUuids, isRescheduled) {
+        //toDo set current provider uuid // appointmentDetails.service
+        let currentProviderUuid = "";//$scope.currentProvider.uuid;
+        console.log(appointmentRequest);
+        const allAppointmentDetails = _.cloneDeep(appointmentRequest);
+        allAppointmentDetails.service = appointmentDetails.service;
+        
+        const updatedStatusAndProviderResponse = Bahmni.Appointments.AppointmentStatusHandler
+            .getUpdatedStatusAndProviderResponse(allAppointmentDetails,
+                currentProviderUuid, existingProvidersUuids, isRescheduled);
+
+        appointmentRequest.status = updatedStatusAndProviderResponse.status;
+        updateProviderResponse(appointmentRequest, updatedStatusAndProviderResponse.providers);
+    };
+
+    const checkAndUpdateAppointmentStatus = function (appointmentRequest, isRecurring) {
+        const request = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
+        updateStatusAndProviderResponse(request, existingProvidersUuids, isRescheduled(appointmentTimeBeforeEdit))
+    };
+
+
     const save = async appointmentRequest => {
+        if (appConfig.enableAppointmentRequests) {
+            checkAndUpdateAppointmentStatus(appointmentRequest, false);
+        }
         const response = await saveAppointment(appointmentRequest);
         const status = response.status;
         if (status === 200) {
@@ -253,6 +319,9 @@ const EditAppointment = props => {
     };
 
     const updateAllAppointments = async recurringAppointmentRequest => {
+        if (appConfig.enableAppointmentRequests) {
+            checkAndUpdateAppointmentStatus(recurringAppointmentRequest, true);
+        }
         const response = await updateRecurring(recurringAppointmentRequest);
         const status = response.status;
         if (status === 200) {
