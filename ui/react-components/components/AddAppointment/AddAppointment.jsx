@@ -288,6 +288,8 @@ const AddAppointment = props => {
         if (isValidAppointment()) {
             const appointment = getAppointmentRequest();
             const response = await getAppointmentConflicts(appointment);
+            console.log("*********************************");
+            console.log(response);
             const status = response.status;
             if (status === 204) {
                 await save(appointment);
