@@ -44,7 +44,7 @@ import {
     CANCEL_CONFIRMATION_MESSAGE_ADD,
     dayRecurrenceType,
     FROM,
-    MINUTES,
+    MINUTES, PROVIDER_RESPONSES,
     RECURRING_APPOINTMENT_TYPE, SERVICE_ERROR_MESSAGE_TIME_OUT_INTERVAL,
     TODAY,
     WALK_IN_APPOINTMENT_TYPE
@@ -234,7 +234,44 @@ const AddAppointment = props => {
         }, SERVICE_ERROR_MESSAGE_TIME_OUT_INTERVAL);
     };
 
+    const isActiveProvider = function (provider) {
+        return provider.response !== PROVIDER_RESPONSES.CANCELLED;
+    };
+
+    const updateProviderResponse = function (updatedProviders, appointmentRequest) {
+        _.each(appointmentRequest.providers, function (providerInAppointment) {
+            if (isActiveProvider(providerInAppointment)) {
+                const updatedProvider = _.find(updatedProviders, function (providerWithUpdatedResponse) {
+                    return providerWithUpdatedResponse.uuid === providerInAppointment.uuid;
+                });
+                if (!_.isUndefined(updatedProvider)) {
+                    providerInAppointment.response = updatedProvider.response;
+                }
+            }
+        });
+    };
+
+    const updateAppointmentStatus = function updateAppointmentStatus(appointmentRequest) {
+        // TODO: set current provider uuid // appointmentDetails.service
+        let currentProviderUuid = "";//$scope.currentProvider.uuid;
+        const allAppointmentDetails = _.cloneDeep(appointmentRequest);
+        allAppointmentDetails.service = appointmentDetails.service;
+
+        const updatedStatusAndProviderResponse = Bahmni.Appointments.AppointmentStatusHandler
+            .getUpdatedStatusAndProviderResponse(allAppointmentDetails,
+                currentProviderUuid, [], false);
+        appointmentRequest.status = updatedStatusAndProviderResponse.status;
+        updateProviderResponse(updatedStatusAndProviderResponse.providers, appointmentRequest);
+    };
+
+    const checkAndUpdateAppointmentStatus = function (appointmentRequest, isRecurring) {
+        updateAppointmentStatus(isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest);
+    };
+
     const save = async appointmentRequest => {
+        if (appConfig.enableAppointmentRequests) {
+            checkAndUpdateAppointmentStatus(appointmentRequest, false);
+        }
         const response = await saveAppointment(appointmentRequest);
         const status = response.status;
         if (status === 200) {
@@ -265,6 +302,9 @@ const AddAppointment = props => {
     };
 
     const saveRecurringAppointments = async recurringAppointmentRequest => {
+        if (appConfig.enableAppointmentRequests) {
+            checkAndUpdateAppointmentStatus(recurringAppointmentRequest, true);
+        }
         const response = await saveRecurring(recurringAppointmentRequest);
         const status = response.status;
         if (status === 200) {
