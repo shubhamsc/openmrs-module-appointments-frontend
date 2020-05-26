@@ -4,16 +4,22 @@ import {renderWithReactIntl} from "../../utils/TestUtil";
 import {fireEvent, waitForElement} from "@testing-library/react";
 import * as addAppointmentService from "./AddAppointmentService.js";
 import moment from "moment";
+import UpdateSuccessModal from "../SuccessModal/UpdateSuccessModal";
+import {AppContext} from "../AppContext/AppContext";
 
 jest.mock('../../api/patientApi');
 jest.mock('../../api/serviceApi');
 jest.mock('../../api/specialityApi');
 jest.mock('../../api/providerApi');
 jest.mock('../../utils/CookieUtil');
+jest.mock('../../api/appointmentsApi');
+
 const patientApi = require('../../api/patientApi');
 const serviceApi = require('../../api/serviceApi');
 const specialityApi = require('../../api/specialityApi');
 const providerApi = require('../../api/providerApi');
+const appointmentApi = require('../../api/appointmentsApi');
+
 let getPatientByLocationSpy;
 let getAllServicesSpy;
 let getAllSpecialitiesSpy;
@@ -563,42 +569,56 @@ describe('Add appointment with appointment request enabled', () => {
         const todayInMilliseconds = today.toDate().getTime();
         const addTwoHoursFromNow = moment().add(2, 'hours');
         const addTwoHoursFromNowInMilliseconds = addTwoHoursFromNow.toDate().getTime();
-        return  {
+        return {
             startDateTime: todayInMilliseconds,
             endDateTime: addTwoHoursFromNowInMilliseconds,
         };
     };
 
     it('should update the appointment status and provider responses if the AppointmentRequest is Enabled', async () => {
+        let appointmentTime = getAppointmentTime();
         const {container, getByText, queryByText} = renderWithReactIntl(
-                <AddAppointment appConfig={config} appointmentParams={getAppointmentTime()}/>
-            );
+            <AppContext.Provider value={{setViewDate: jest.fn()}}>
+                <AddAppointment appConfig={config} appointmentParams={appointmentTime}/>
+            </AppContext.Provider>
+
+        );
         await selectPatient(container, getByText);
         await selectService(container, getByText);
 
-        const saveAppointmentSpy = jest.spyOn(addAppointmentService, 'saveAppointment');
-        const getConflictsSpy = jest.spyOn(addAppointmentService, 'getAppointmentConflicts')
-            .mockImplementation(() => Promise.resolve({status:204}));
 
-        let selectedProvider = "Provider One";
-        const inputBox = container.querySelectorAll('.react-select__input input')[3];
-        fireEvent.change(inputBox, {target: {value: "One"}});
-        await waitForElement(() => (container.querySelector('.react-select__menu')));
-        const optionOne = getByText(selectedProvider);
-        fireEvent.click(optionOne);
+        const getConflictsSpy = jest.spyOn(appointmentApi, 'conflictsFor')
+            .mockImplementation((param) => Promise.resolve({status: 204}));
+        const saveAppointmentSpy = jest.spyOn(appointmentApi, "saveOrUpdateAppointment")
+            .mockImplementation((param) => Promise.resolve({
+                status: 200,
+                data: {startDateTime: appointmentTime.startDateTime}
+            }));
 
-        fireEvent.change(inputBox, {target: {value: "Two"}});
-        await waitForElement(() => (container.querySelector('.react-select__menu')));
-        selectedProvider = "Provider Two";
-        const optionTwo = getByText(selectedProvider);
-        fireEvent.click(optionTwo);
+        // let selectedProvider = "Provider One";
+        // const inputBox = container.querySelectorAll('.react-select__input input')[3];
+        // fireEvent.change(inputBox, {target: {value: "One"}});
+        // await waitForElement(() => (container.querySelector('.react-select__menu')));
+        // const optionOne = getByText(selectedProvider);
+        // fireEvent.click(optionOne);
+
+        // fireEvent.change(inputBox, {target: {value: "Two"}});
+        // await waitForElement(() => (container.querySelector('.react-select__menu')));
+        // selectedProvider = "Provider Two";
+        // const optionTwo = getByText(selectedProvider);
+        // fireEvent.click(optionTwo);
 
         const button = getByText('Check and Save');
         fireEvent.click(button);
+        await waitForElement(() => (container.querySelector('.popup-overlay')));
 
-        let appointmentRequestData = saveAppointmentSpy.mock.calls[0];
-        console.log(appointmentRequestData)
-        expect(saveAppointmentSpy).not.toHaveBeenCalled();
+        console.log(saveAppointmentSpy.mock.calls);
+        console.log(getConflictsSpy.mock.calls);
+
+        expect(getConflictsSpy).toHaveBeenCalled();
+        expect(saveAppointmentSpy).toHaveBeenCalled();
+
+
     })
 });
 
