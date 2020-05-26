@@ -226,7 +226,7 @@ const EditAppointment = props => {
         setTimeout(function () {
             setServiceErrorMessage('');
         }, SERVICE_ERROR_MESSAGE_TIME_OUT_INTERVAL);
-    }
+    };
 
     const checkAndSave = async () => {
         if (isValidAppointment()) {
@@ -284,7 +284,6 @@ const EditAppointment = props => {
     const updateStatusAndProviderResponse = function(appointmentRequest, existingProvidersUuids, isRescheduled) {
         //toDo set current provider uuid // appointmentDetails.service
         let currentProviderUuid = "";//$scope.currentProvider.uuid;
-        console.log(appointmentRequest);
         const allAppointmentDetails = _.cloneDeep(appointmentRequest);
         allAppointmentDetails.service = appointmentDetails.service;
         

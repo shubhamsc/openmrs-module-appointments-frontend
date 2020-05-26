@@ -54,7 +54,7 @@ import {getDefaultOccurrences, getDuration, getYesterday} from "../../helper.js"
 import {getSelectedWeekDays, getWeekDays} from "../../services/WeekDaysService/WeekDaysService";
 import ButtonGroup from "../ButtonGroup/ButtonGroup.jsx";
 import {getErrorTranslations} from "../../utils/ErrorTranslationsUtil";
-import {cloneDeep, each, isEmpty, find, isUndefined, isNil} from 'lodash';
+import {cloneDeep, map, each, isEmpty, find, isUndefined, isNil} from 'lodash';
 import AppointmentEditorCommonFieldsWrapper from "../AppointmentEditorCommonFieldsWrapper/AppointmentEditorCommonFieldsWrapper.jsx";
 import Conflicts from "../Conflicts/Conflicts.jsx";
 import {getLocale} from "../../utils/LocalStorageUtil";
@@ -242,7 +242,7 @@ const AddAppointment = props => {
         each(appointmentRequest.providers, function (providerInAppointment) {
             if (isActiveProvider(providerInAppointment)) {
                 const updatedProvider = find(updatedProviders, function (providerWithUpdatedResponse) {
-                    return providerWithUpdatedResponse.uuid === providerInAppointment.uuid;
+                    return providerWithUpdatedResponse.uuid === providerInAppointment.value;
                 });
                 if (!isUndefined(updatedProvider)) {
                     providerInAppointment.response = updatedProvider.response;
@@ -256,7 +256,11 @@ const AddAppointment = props => {
         // TODO: set current provider uuid // appointmentDetails.service
         let currentProviderUuid = "";//$scope.currentProvider.uuid;
         const allAppointmentDetails = cloneDeep(appointmentRequest);
-        allAppointmentDetails.service = appointmentDetails.service;
+        allAppointmentDetails.service = appointmentDetails.service.value;
+        allAppointmentDetails.providers = map(appointmentRequest.providers, provider => ({
+            response: provider.response,
+            uuid: provider.value
+        }));
 
         const updatedStatusAndProviderResponse = getUpdatedStatusAndProviderResponse(allAppointmentDetails,
                 currentProviderUuid, [], false);
@@ -273,7 +277,6 @@ const AddAppointment = props => {
             await checkAndUpdateAppointmentStatus(appointmentRequest, false);
         }
         const response = await saveAppointment(appointmentRequest);
-        console.log("*****************", response);
         const status = response.status;
         if (status === 200) {
             setConflicts(undefined);
