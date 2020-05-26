@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, {Fragment, useEffect, useState} from "react";
 import {FormattedMessage, injectIntl} from "react-intl";
-import {filter} from "lodash";
+import {cloneDeep, each, filter, find, isUndefined, map} from "lodash";
 import classNames from "classnames";
 import {
     appointmentEditor,
@@ -136,9 +136,9 @@ const EditAppointment = props => {
 
     const updateAppointmentDetails = modifiedAppointmentDetails => setAppointmentDetails(prevAppointmentDetails => {
         let appointmentTimeBeforeEdit = {
-            date: prevAppointmentDetails.appointmentDate,
-            startTime: prevAppointmentDetails.startTime,
-            endTime: prevAppointmentDetails.endTime,
+            date: modifiedAppointmentDetails.appointmentDate,
+            startTime: modifiedAppointmentDetails.startTime,
+            endTime: modifiedAppointmentDetails.endTime,
         };
         let existingProvidersUuids = filter(prevAppointmentDetails.providers, isActiveProvider)
             .map(provider => provider.uuid);
@@ -187,6 +187,7 @@ const EditAppointment = props => {
             providers: getValidProviders(appointmentDetails.providers),
             locationUuid: appointmentDetails.location && appointmentDetails.location.value && appointmentDetails.location.value.uuid,
             appointmentKind: appointmentDetails.appointmentKind,
+            status: appointmentDetails.status,
             comments: appointmentDetails.notes
         };
         if (!appointment.serviceTypeUuid || appointment.serviceTypeUuid.length < 1)
@@ -250,10 +251,6 @@ const EditAppointment = props => {
         setShowUpdateSuccessPopup(true);
     };
 
-    const isActiveProvider = function (provider) {
-        return provider.response !== PROVIDER_RESPONSES.CANCELLED;
-    };
-
     const isRescheduled = function (appointmentTimeBeforeEdit) {
         if (!moment(appointmentDetails.appointmentDate).isSame(moment(appointmentTimeBeforeEdit.date))) {
             return true;
@@ -268,42 +265,49 @@ const EditAppointment = props => {
         return !(isSameStart && isSameEnd);
     };
 
-    const updateProviderResponse = function (appointmentRequest, updatedProviders) {
-        _.each(appointmentRequest.providers, function (providerInAppointment) {
-            if (isActiveProvider(providerInAppointment)){
-                const updatedProvider = _.find(updatedProviders, function (providerWithUpdatedResponse) {
-                    return providerWithUpdatedResponse.uuid === providerInAppointment.uuid;
+    const isActiveProvider = function (provider) {
+        return provider.response !== PROVIDER_RESPONSES.CANCELLED;
+    };
+
+    const updateProviderResponse = function (updatedProviders, appointmentRequest) {
+        each(appointmentRequest.providers, function (providerInAppointment) {
+            if (isActiveProvider(providerInAppointment)) {
+                const updatedProvider = find(updatedProviders, function (providerWithUpdatedResponse) {
+                    return providerWithUpdatedResponse.uuid === providerInAppointment.value;
                 });
-                if (!_.isUndefined(updatedProvider)){
+                if (!isUndefined(updatedProvider)) {
                     providerInAppointment.response = updatedProvider.response;
                 }
             }
         });
     };
 
-    const updateStatusAndProviderResponse = function(appointmentRequest, existingProvidersUuids, isRescheduled) {
-        //toDo set current provider uuid // appointmentDetails.service
+    const updateAppointmentStatus = async function(appointmentRequest) {
+        const {default: getUpdatedStatusAndProviderResponse} = await import('../../appointment-request/AppointmentStatusHandler');
+        // TODO: set current provider uuid // appointmentDetails.service
         let currentProviderUuid = "";//$scope.currentProvider.uuid;
-        const allAppointmentDetails = _.cloneDeep(appointmentRequest);
-        allAppointmentDetails.service = appointmentDetails.service;
-        
-        const updatedStatusAndProviderResponse = Bahmni.Appointments.AppointmentStatusHandler
-            .getUpdatedStatusAndProviderResponse(allAppointmentDetails,
-                currentProviderUuid, existingProvidersUuids, isRescheduled);
+        const allAppointmentDetails = cloneDeep(appointmentRequest);
+        allAppointmentDetails.service = appointmentDetails.service.value;
+        allAppointmentDetails.providers = map(appointmentRequest.providers, provider => ({
+            response: provider.response,
+            uuid: provider.value
+        }));
 
+        const updatedStatusAndProviderResponse = getUpdatedStatusAndProviderResponse(allAppointmentDetails,
+            currentProviderUuid, [], false);
         appointmentRequest.status = updatedStatusAndProviderResponse.status;
-        updateProviderResponse(appointmentRequest, updatedStatusAndProviderResponse.providers);
+        updateProviderResponse(updatedStatusAndProviderResponse.providers, appointmentRequest);
     };
 
-    const checkAndUpdateAppointmentStatus = function (appointmentRequest, isRecurring) {
-        const request = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
-        updateStatusAndProviderResponse(request, existingProvidersUuids, isRescheduled(appointmentTimeBeforeEdit))
+    const checkAndUpdateAppointmentStatus = async function (appointmentRequest, isRecurring) {
+        if (isRescheduled(appointmentTimeBeforeEdit)){
+            await updateAppointmentStatus(isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest);
+        }
     };
-
 
     const save = async appointmentRequest => {
         if (appConfig.enableAppointmentRequests) {
-            checkAndUpdateAppointmentStatus(appointmentRequest, false);
+            await checkAndUpdateAppointmentStatus(appointmentRequest, false);
         }
         const response = await saveAppointment(appointmentRequest);
         const status = response.status;
@@ -320,7 +324,7 @@ const EditAppointment = props => {
 
     const updateAllAppointments = async recurringAppointmentRequest => {
         if (appConfig.enableAppointmentRequests) {
-            checkAndUpdateAppointmentStatus(recurringAppointmentRequest, true);
+            await checkAndUpdateAppointmentStatus(recurringAppointmentRequest, true);
         }
         const response = await updateRecurring(recurringAppointmentRequest);
         const status = response.status;

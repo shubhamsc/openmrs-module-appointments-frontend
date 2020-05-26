@@ -252,7 +252,7 @@ const AddAppointment = props => {
     };
 
     const updateAppointmentStatus = async function(appointmentRequest) {
-        const {default: getUpdatedStatusAndProviderResponse} = await import('../../status-handler/AppointmentStatusHandler');
+        const {default: getUpdatedStatusAndProviderResponse} = await import('../../appointment-request/AppointmentStatusHandler');
         // TODO: set current provider uuid // appointmentDetails.service
         let currentProviderUuid = "";//$scope.currentProvider.uuid;
         const allAppointmentDetails = cloneDeep(appointmentRequest);

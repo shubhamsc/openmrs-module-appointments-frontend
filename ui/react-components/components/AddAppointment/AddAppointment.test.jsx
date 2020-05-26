@@ -17,7 +17,7 @@ const patientApi = require('../../api/patientApi');
 const serviceApi = require('../../api/serviceApi');
 const specialityApi = require('../../api/specialityApi');
 const providerApi = require('../../api/providerApi');
-const appointmentApi = require('../../api/appointmentsApi');
+const appointmentsApi = require('../../api/appointmentsApi');
 
 let getPatientByLocationSpy;
 let getAllServicesSpy;
@@ -586,9 +586,9 @@ describe('Add appointment with appointment request enabled', () => {
     let getConflictsSpy;
     let saveAppointmentSpy;
     beforeEach(() => {
-        getConflictsSpy = jest.spyOn(appointmentApi, 'conflictsFor')
+        getConflictsSpy = jest.spyOn(appointmentsApi, 'conflictsFor')
             .mockImplementation((param) => Promise.resolve({status: 204}));
-        saveAppointmentSpy = jest.spyOn(appointmentApi, "saveOrUpdateAppointment")
+        saveAppointmentSpy = jest.spyOn(appointmentsApi, "saveOrUpdateAppointment")
             .mockImplementation((param) => Promise.resolve({
                 status: 200,
                 data: {startDateTime: appointmentTime.startDateTime}

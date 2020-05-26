@@ -35,7 +35,7 @@ const services = [{
     "maxAppointmentsLimit": null,
     "durationMins": null,
     "location": {"name": "OPD", "uuid": "71361c6a-9f64-11e7-b330-000c29e530d2"},
-    "uuid": "7eb76991-cc67-45c1-9cb9-93d91113673a",
+    "uuid": "7eb76991-cc67-45c1-9cb9-93d91113672b",
     "color": "#DC143C",
     "creatorName": null,
     "initialAppointmentStatus": "Requested"
