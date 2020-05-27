@@ -1,9 +1,17 @@
 import {APPOINTMENT_STATUSES, PROVIDER_RESPONSES} from "../constants";
 import {map, isEmpty, includes, cloneDeep, some} from "lodash";
 
+const appointmentStatusList = APPOINTMENT_STATUSES;
+const providerResponseList = PROVIDER_RESPONSES;
+const map_fn = map;
+const isEmpty_fn = isEmpty;
+const includes_fn = includes;
+const cloneDeep_fn = cloneDeep;
+const some_fn = some;
+
 const mapNewProvidersToGivenResponse = function (appointment, existingProvidersUuids, response) {
-    return map(appointment.providers, function (provider) {
-        if (includes(existingProvidersUuids, provider.uuid)) {
+    return map_fn(appointment.providers, function (provider) {
+        if (includes_fn(existingProvidersUuids, provider.uuid)) {
             return {uuid: provider.uuid, response: provider.response};
         } else {
             return {uuid: provider.uuid, response: response};
@@ -12,11 +20,11 @@ const mapNewProvidersToGivenResponse = function (appointment, existingProvidersU
 };
 
 const isStatusRequested = function (status) {
-    return status === APPOINTMENT_STATUSES.Requested;
+    return status === appointmentStatusList.Requested;
 };
 
 const isStatusScheduled = function (status) {
-    return status === APPOINTMENT_STATUSES.Scheduled;
+    return status === appointmentStatusList.Scheduled;
 };
 
 const isNewAppointment = function (appointment) {
@@ -25,21 +33,21 @@ const isNewAppointment = function (appointment) {
 
 const getStatusForAppointment = function (appointment) {
     if (isNewAppointment(appointment) || isStatusRequested(appointment.status)) {
-        return APPOINTMENT_STATUSES.Scheduled;
+        return appointmentStatusList.Scheduled;
     } else {
         return appointment.status;
     }
 };
 
 const updateIfCurrentProviderInAppointment = function (statusAndProviderResponse, currentProviderUuid, appointment) {
-    const clone = cloneDeep(statusAndProviderResponse);
-    const isCurrentProviderInAppointment = some(statusAndProviderResponse.providers, provider => provider.uuid === currentProviderUuid);
+    const clone = cloneDeep_fn(statusAndProviderResponse);
+    const isCurrentProviderInAppointment = some_fn(statusAndProviderResponse.providers, provider => provider.uuid === currentProviderUuid);
     if (!isCurrentProviderInAppointment) return clone;
 
     clone.status = getStatusForAppointment(appointment);
-    clone.providers = map(clone.providers, function (provider) {
+    clone.providers = map_fn(clone.providers, function (provider) {
         const response = (provider.uuid === currentProviderUuid) ?
-            PROVIDER_RESPONSES.ACCEPTED : provider.response;
+            providerResponseList.ACCEPTED : provider.response;
         return {uuid: provider.uuid, response: response};
     });
     return clone;
@@ -48,14 +56,14 @@ const updateIfCurrentProviderInAppointment = function (statusAndProviderResponse
 const updateIfRescheduled = function (statusAndProviderResponse, appointment, currentProviderUuid) {
     // in this case we don't keep the existing appointment status and responses
     //this is an special edit
-    const clone = cloneDeep(statusAndProviderResponse);
-    const isCurrentProviderInAppointment = some(clone.providers, provider => provider.uuid === currentProviderUuid);
+    const clone = cloneDeep_fn(statusAndProviderResponse);
+    const isCurrentProviderInAppointment = some_fn(clone.providers, provider => provider.uuid === currentProviderUuid);
 
-    clone.status = isCurrentProviderInAppointment ? APPOINTMENT_STATUSES.Scheduled :
-        APPOINTMENT_STATUSES.Requested;
-    clone.providers = map(clone.providers, function (provider) {
+    clone.status = isCurrentProviderInAppointment ? appointmentStatusList.Scheduled :
+        appointmentStatusList.Requested;
+    clone.providers = map_fn(clone.providers, function (provider) {
         const response = (provider.uuid === currentProviderUuid) ?
-            PROVIDER_RESPONSES.ACCEPTED : PROVIDER_RESPONSES.AWAITING;
+            providerResponseList.ACCEPTED : providerResponseList.AWAITING;
         return {uuid: provider.uuid, response: response};
     });
     return clone;
@@ -66,17 +74,17 @@ const updateIfAtleastOneProviderHasAccepted = function (statusAndProviderRespons
     //  when new providers are added to a no provider appointment
     //  when only accepted provider is removed from appointment appointment
 
-    const clone = cloneDeep(statusAndProviderResponse);
-    const hasAtleastOneAccept = some(clone.providers, function (provider) {
-        return provider.response === PROVIDER_RESPONSES.ACCEPTED;
+    const clone = cloneDeep_fn(statusAndProviderResponse);
+    const hasAtleastOneAccept = some_fn(clone.providers, function (provider) {
+        return provider.response === providerResponseList.ACCEPTED;
     });
     if (hasAtleastOneAccept) {
         if (isStatusRequested(clone.status)) {
-            clone.status = APPOINTMENT_STATUSES.Scheduled;
+            clone.status = appointmentStatusList.Scheduled;
         }
     } else {
         if (isStatusScheduled(clone.status)) {
-            clone.status = APPOINTMENT_STATUSES.Requested;
+            clone.status = appointmentStatusList.Requested;
         }
     }
     return clone;
@@ -85,9 +93,9 @@ const updateIfAtleastOneProviderHasAccepted = function (statusAndProviderRespons
 const statusAndResponseForScheduledServices = function (appointment) {
     const statusAndProviderResponse = {};
     statusAndProviderResponse.status = isNewAppointment(appointment) ?
-        APPOINTMENT_STATUSES.Scheduled : appointment.status;
-    statusAndProviderResponse.providers = map(appointment.providers, function (provider) {
-        return {uuid: provider.uuid, response: PROVIDER_RESPONSES.ACCEPTED};
+        appointmentStatusList.Scheduled : appointment.status;
+    statusAndProviderResponse.providers = map_fn(appointment.providers, function (provider) {
+        return {uuid: provider.uuid, response: providerResponseList.ACCEPTED};
     });
     return statusAndProviderResponse;
 };
@@ -95,10 +103,10 @@ const statusAndResponseForScheduledServices = function (appointment) {
 const statusAndResponseForRequestedServices = function (appointment, existingProvidersUuids) {
     const statusAndProviderResponse = {};
     statusAndProviderResponse.status = isNewAppointment(appointment) ?
-        APPOINTMENT_STATUSES.Requested : appointment.status;
+        appointmentStatusList.Requested : appointment.status;
 
     statusAndProviderResponse.providers = mapNewProvidersToGivenResponse(appointment, existingProvidersUuids,
-        PROVIDER_RESPONSES.AWAITING);
+        providerResponseList.AWAITING);
     return statusAndProviderResponse;
 };
 
@@ -106,7 +114,7 @@ const getUpdatedStatusAndProviderResponse = function (appointment, currentProvid
     if (!isStatusRequested(appointment.service.initialAppointmentStatus)) {
         return statusAndResponseForScheduledServices(appointment);
     }
-    if (isEmpty(appointment.providers)) {
+    if (isEmpty_fn(appointment.providers)) {
         return {status: getStatusForAppointment(appointment), providers: []};
     }
     let statusAndProviderResponse = statusAndResponseForRequestedServices(appointment, existingProvidersUuids);
