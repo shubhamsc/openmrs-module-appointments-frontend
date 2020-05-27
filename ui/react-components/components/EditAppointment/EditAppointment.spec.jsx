@@ -654,7 +654,7 @@ describe('Edit appointment with appointment request enabled', () => {
         expect(appointmentRequestData.providers[1].response).toEqual("ACCEPTED");
     })
 
-    it('should update the provider responses for newly added providers', async () => {
+    it('should update the provider responses for newly added providers even if time is not changed', async () => {
         let getByTextInDom = undefined;
         let containerInDom = undefined;
         let getByTestIdInDom = undefined;
