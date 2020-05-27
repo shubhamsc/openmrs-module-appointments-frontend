@@ -185,7 +185,7 @@ describe('Edit Appointment', () => {
     });
 
     it('should check the walk in appointment when clicked', () => {
-        const {container} = renderWithReactIntl(<EditAppointment isRecurring={false} appointmentUuid="appt-uuid"/>);
+        const {container} = renderWithReactIntl(<EditAppointment isRecurring={false} appointmentUuid="36fdc60e-7ae5-4708-9fcc-8c98daba0ca9"/>);
         const walkInCheckBox = container.querySelectorAll('.rc-checkbox-input')[1];
         fireEvent.click(walkInCheckBox);
         expect(walkInCheckBox.checked).toBeTruthy();
@@ -340,7 +340,7 @@ describe('Edit Appointment', () => {
         };
         act(() => {
             const {getByText, container, getByTestId, getAllByTitle} = renderWithReactIntl(<EditAppointment
-                appointmentUuid={'DAY'} isRecurring="false" appConfig={config}/>);
+                appointmentUuid={"36fdc60e-7ae5-4708-9fcc-8c98daba0ca9"} isRecurring="false" appConfig={config}/>);
             getByTextInDom = getByText;
             containerInDom = container;
             getByTestIdInDom = getByTestId;
@@ -368,7 +368,7 @@ describe('Edit Appointment', () => {
         };
         act(() => {
             const {getByText, getAllByText, container, getByTestId, getAllByTitle} = renderWithReactIntl(<EditAppointment
-                appointmentUuid={'DAY'} isRecurring="true" appConfig={config}/>);
+                appointmentUuid={"36fdc60e-7ae5-4708-9fcc-8c98daba0ca9"} isRecurring="true" appConfig={config}/>);
             getByTextInDom = getByText;
             getAllByTextInDom = getAllByText;
             containerInDom = container;
@@ -498,7 +498,7 @@ describe('Edit Appointment', () => {
         let getByPlaceholderTextInDom= undefined;
         act(() => {
             const {getByText, container, getByPlaceholderText} = renderWithReactIntl(<EditAppointment
-                appointmentUuid='active-appointment-uuid'  isRecurring="false" />);
+                appointmentUuid="36fdc60e-7ae5-4708-9fcc-8c98daba0ca9" isRecurring="false" />);
             getByTextInDom = getByText;
             containerInDom = container;
             getByPlaceholderTextInDom = getByPlaceholderText

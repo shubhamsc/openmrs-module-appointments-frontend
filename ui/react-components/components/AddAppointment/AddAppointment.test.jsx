@@ -574,7 +574,7 @@ describe('Add appointment with appointment request enabled', () => {
         };
     };
 
-    const selectProvider = async (searchValue, providerName) => {
+    const selectProvider = async (container, getByText, searchValue, providerName) => {
         const inputBox = container.querySelectorAll('.react-select__input input')[3];
         fireEvent.change(inputBox, {target: {value: searchValue}});
         await waitForElement(() => (container.querySelector('.react-select__menu')));
@@ -585,7 +585,9 @@ describe('Add appointment with appointment request enabled', () => {
 
     let getConflictsSpy;
     let saveAppointmentSpy;
+    let appointmentTime;
     beforeEach(() => {
+        appointmentTime = getAppointmentTime();
         getConflictsSpy = jest.spyOn(appointmentsApi, 'conflictsFor')
             .mockImplementation((param) => Promise.resolve({status: 204}));
         saveAppointmentSpy = jest.spyOn(appointmentsApi, "saveOrUpdateAppointment")
@@ -601,7 +603,6 @@ describe('Add appointment with appointment request enabled', () => {
     });
 
     it('should update the appointment status and provider responses if the AppointmentRequest is Enabled', async () => {
-        let appointmentTime = getAppointmentTime();
         const {container, getByText, queryByText} = renderWithReactIntl(
             <AppContext.Provider value={{setViewDate: jest.fn()}}>
                 <AddAppointment appConfig={config} appointmentParams={appointmentTime}/>
@@ -610,8 +611,8 @@ describe('Add appointment with appointment request enabled', () => {
         );
         await selectPatient(container, getByText);
         await selectService(container, getByText);
-        await selectProvider("One", "Provider One");
-        await selectProvider("Two", "Provider Two");
+        await selectProvider(container, getByText, "One", "Provider One");
+        await selectProvider(container, getByText, "Two", "Provider Two");
 
         const button = getByText('Check and Save');
         fireEvent.click(button);

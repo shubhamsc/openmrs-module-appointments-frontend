@@ -26,13 +26,14 @@ const AppointmentStatus = props => {
     setSelectedAppointmentStatusOptions
   ] = useState([]);
 
-  const appointmentStatusList = Object.keys(APPOINTMENT_STATUSES).map(status => {
-    return {value: status, label: APPOINTMENT_STATUSES[status]}
-  });
 
   useEffect(() => {
+    const appointmentStatusList = Object.keys(APPOINTMENT_STATUSES).map(status => {
+      return {value: status, label: APPOINTMENT_STATUSES[status]}
+    });
     setAppointStatusOptions(appointmentStatusList);
-  }, [appointmentStatusList, setAppointStatusOptions]);
+  }, [APPOINTMENT_STATUSES, setAppointStatusOptions]);
+
 
   const onChangeHandler = e => searchFieldOnChangeHandler(appointmentStatusOptions,setAppointStatusOptions,selectedAppointmentStatusOptions,setSelectedAppointmentStatusOptions,e)
   const onRemoveHandler = e => searchFieldOnRemoveHandler(appointmentStatusOptions,setAppointStatusOptions,selectedAppointmentStatusOptions,setSelectedAppointmentStatusOptions,e)

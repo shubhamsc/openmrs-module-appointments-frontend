@@ -1,7 +1,5 @@
 import {APPOINTMENT_STATUSES, PROVIDER_RESPONSES} from "../constants";
 import {map, isEmpty, includes, cloneDeep, some} from "lodash";
-window.Bahmni = window.Bahmni || {};
-Bahmni.Appointments = Bahmni.Appointments || {};
 
 const mapNewProvidersToGivenResponse = function (appointment, existingProvidersUuids, response) {
     return map(appointment.providers, function (provider) {

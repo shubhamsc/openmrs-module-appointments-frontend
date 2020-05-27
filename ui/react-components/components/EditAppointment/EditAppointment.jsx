@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import React, {Fragment, useEffect, useState} from "react";
 import {FormattedMessage, injectIntl} from "react-intl";
-import {cloneDeep, each, filter, find, isUndefined, map} from "lodash";
+import {filter, isEqual} from "lodash";
 import classNames from "classnames";
 import {
     appointmentEditor,
@@ -10,8 +10,7 @@ import {
     recurringContainer,
     recurringContainerLeft,
     recurringContainerRight,
-    searchFieldsContainer,
-    isRecurring
+    searchFieldsContainer
 } from "../AddAppointment/AddAppointment.module.scss";
 import {conflictsPopup, customPopup} from "../CustomPopup/CustomPopup.module.scss";
 import AppointmentEditorCommonFieldsWrapper
@@ -21,15 +20,19 @@ import {getAppointment} from "../../api/appointmentsApi";
 import {getPatientForDropdown} from "../../mapper/patientMapper";
 import moment from "moment";
 import 'moment-timezone';
-import {getDuration, getValidProviders, getYesterday} from "../../helper";
+import {getDuration, getValidProviders} from "../../helper";
 import {
     appointmentEndTimeProps,
     appointmentStartTimeProps,
     CANCEL_CONFIRMATION_MESSAGE_EDIT,
-    MINUTES, PROVIDER_RESPONSES, RECURRENCE_TERMINATION_AFTER, RECURRENCE_TERMINATION_ON,
+    MINUTES, PROVIDER_RESPONSES,
+    RECURRENCE_TERMINATION_AFTER,
+    RECURRENCE_TERMINATION_ON,
     RECURRING_APPOINTMENT_TYPE,
-    SCHEDULED_APPOINTMENT_TYPE, SERVICE_ERROR_MESSAGE_TIME_OUT_INTERVAL,
-    WALK_IN_APPOINTMENT_TYPE, weekRecurrenceType
+    SCHEDULED_APPOINTMENT_TYPE,
+    SERVICE_ERROR_MESSAGE_TIME_OUT_INTERVAL,
+    WALK_IN_APPOINTMENT_TYPE,
+    weekRecurrenceType
 } from "../../constants";
 import AppointmentPlan from "../AppointmentPlan/AppointmentPlan.jsx";
 import Label from "../Label/Label.jsx";
@@ -39,9 +42,9 @@ import {
     editAppointment,
     recurringDetailsEdit,
     recurringEndDateContainer,
+    recurringEndDateLabel,
     recurringTerminationDetails,
-    weekDaySelector,
-    recurringEndDateLabel
+    weekDaySelector
 } from './EditAppointment.module.scss'
 import TimeSelector from "../TimeSelector/TimeSelector.jsx";
 import InputNumber from "../InputNumber/InputNumber.jsx";
@@ -65,11 +68,10 @@ import {getDateTime, isStartTimeBeforeEndTime} from "../../utils/DateUtil";
 import UpdateSuccessModal from "../SuccessModal/UpdateSuccessModal.jsx";
 import UpdateConfirmationModal from "../UpdateConfirmationModal/UpdateConfirmationModal.jsx";
 import {getComponentsDisableStatus} from "./ComponentsDisableStatus";
-import {isEqual} from "lodash";
 import ErrorMessage from "../ErrorMessage/ErrorMessage.jsx";
 import {getErrorTranslations} from "../../utils/ErrorTranslationsUtil";
 import {AppContext} from "../AppContext/AppContext";
-
+import updateAppointmentStatusAndProviderResponse from "../../appointment-request/AppointmentRequest";
 
 const EditAppointment = props => {
 
@@ -134,15 +136,19 @@ const EditAppointment = props => {
         return {...prevErrors, ...errorIndicators}
     });
 
+    const isActiveProvider = function (provider) {
+        return provider.response !== PROVIDER_RESPONSES.CANCELLED;
+    };
+
     const updateAppointmentDetails = modifiedAppointmentDetails => setAppointmentDetails(prevAppointmentDetails => {
         let appointmentTimeBeforeEdit = {
             date: modifiedAppointmentDetails.appointmentDate,
             startTime: modifiedAppointmentDetails.startTime,
             endTime: modifiedAppointmentDetails.endTime,
         };
+        setAppointmentTimeBeforeEdit(appointmentTimeBeforeEdit);
         let existingProvidersUuids = filter(prevAppointmentDetails.providers, isActiveProvider)
             .map(provider => provider.uuid);
-        setAppointmentTimeBeforeEdit(appointmentTimeBeforeEdit);
         setExistingProvidersUuids(existingProvidersUuids);
         return {...prevAppointmentDetails, ...modifiedAppointmentDetails}
     });
@@ -265,43 +271,10 @@ const EditAppointment = props => {
         return !(isSameStart && isSameEnd);
     };
 
-    const isActiveProvider = function (provider) {
-        return provider.response !== PROVIDER_RESPONSES.CANCELLED;
-    };
-
-    const updateProviderResponse = function (updatedProviders, appointmentRequest) {
-        each(appointmentRequest.providers, function (providerInAppointment) {
-            if (isActiveProvider(providerInAppointment)) {
-                const updatedProvider = find(updatedProviders, function (providerWithUpdatedResponse) {
-                    return providerWithUpdatedResponse.uuid === providerInAppointment.value;
-                });
-                if (!isUndefined(updatedProvider)) {
-                    providerInAppointment.response = updatedProvider.response;
-                }
-            }
-        });
-    };
-
-    const updateAppointmentStatus = async function(appointmentRequest) {
-        const {default: getUpdatedStatusAndProviderResponse} = await import('../../appointment-request/AppointmentStatusHandler');
-        // TODO: set current provider uuid // appointmentDetails.service
-        let currentProviderUuid = "";//$scope.currentProvider.uuid;
-        const allAppointmentDetails = cloneDeep(appointmentRequest);
-        allAppointmentDetails.service = appointmentDetails.service.value;
-        allAppointmentDetails.providers = map(appointmentRequest.providers, provider => ({
-            response: provider.response,
-            uuid: provider.value
-        }));
-
-        const updatedStatusAndProviderResponse = getUpdatedStatusAndProviderResponse(allAppointmentDetails,
-            currentProviderUuid, [], false);
-        appointmentRequest.status = updatedStatusAndProviderResponse.status;
-        updateProviderResponse(updatedStatusAndProviderResponse.providers, appointmentRequest);
-    };
-
     const checkAndUpdateAppointmentStatus = async function (appointmentRequest, isRecurring) {
         if (isRescheduled(appointmentTimeBeforeEdit)){
-            await updateAppointmentStatus(isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest);
+            const appointmentRequestData = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
+            await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData);
         }
     };
 
