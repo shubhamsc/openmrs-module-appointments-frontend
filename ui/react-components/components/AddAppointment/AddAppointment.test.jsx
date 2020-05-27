@@ -30,7 +30,8 @@ const clickOnFirstDayOfNextMonth = (container) => {
     fireEvent.click(nextButton);
     fireEvent.click(container.querySelector('.react-datepicker__day--001'));
     return nextMonth;
-}
+};
+
 describe('Add Appointment', () => {
     beforeEach(() => {
         getPatientByLocationSpy = jest.spyOn(patientApi, 'getPatientsByLocation');

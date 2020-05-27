@@ -269,7 +269,7 @@ const AddAppointment = props => {
 
     const checkAndUpdateAppointmentStatus = async function (appointmentRequest, isRecurring) {
         const appointmentRequestData = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
-        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData);
+        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData, [], false);
     };
 
     const saveRecurringAppointments = async recurringAppointmentRequest => {

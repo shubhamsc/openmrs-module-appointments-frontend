@@ -558,7 +558,7 @@ describe('Edit appointment with appointment request enabled', () => {
         };
     };
 
-    const selectProvider = async (searchValue, providerName) => {
+    const selectProvider = async (container, getByText, searchValue, providerName) => {
         const inputBox = container.querySelectorAll('.react-select__input input')[3];
         fireEvent.change(inputBox, {target: {value: searchValue}});
         await waitForElement(() => (container.querySelector('.react-select__menu')));
@@ -585,6 +585,40 @@ describe('Edit appointment with appointment request enabled', () => {
     afterEach(() => {
         getConflictsSpy.mockRestore();
         saveAppointmentSpy.mockRestore();
+    });
+
+    it('should update the appointment status and provider responses for edits when appointment date/time is changed', async () => {
+        let getByTextInDom = undefined;
+        let containerInDom = undefined;
+        let getByTestIdInDom = undefined;
+        act(() => {
+            const {container, getByText, queryByText, getByTestId} = renderWithReactIntl(
+                <AppContext.Provider value={{setViewDate: jest.fn()}}>
+                    renderWithReactIntl(<EditAppointment appConfig={config} appointmentUuid={'123tr5-7ae5-4708-9fcc-8c98daba0ca9'}
+                                                         isRecurring="false"/>);
+                </AppContext.Provider>
+
+            );
+            getByTextInDom = getByText;
+            containerInDom = container;
+            getByTestIdInDom = getByTestId;
+        });
+
+        await flushPromises();
+        clickOnFirstDayOfNextMonth(containerInDom);
+        fireEvent.click(getByTextInDom('Update'));
+        await waitForElement(() => (containerInDom.querySelector('.popup-overlay')));
+        fireEvent.click(await getByTestIdInDom("update-confirm-button"));
+        await waitForElement(() => (containerInDom.querySelector('.popup-overlay')));
+
+        expect(getConflictsSpy).toHaveBeenCalled();
+        expect(saveAppointmentSpy).toHaveBeenCalled();
+
+        const appointmentRequestData = saveAppointmentSpy.mock.calls[0][0];
+        expect(appointmentRequestData.status).toEqual("Requested");
+        expect(appointmentRequestData.providers.length).toEqual(2);
+        expect(appointmentRequestData.providers[0].response).toEqual("AWAITING");
+        expect(appointmentRequestData.providers[1].response).toEqual("AWAITING");
     });
 
     it('should not update the appointment status and provider responses for edits if time is not changed', async () => {
@@ -618,5 +652,44 @@ describe('Edit appointment with appointment request enabled', () => {
         expect(appointmentRequestData.providers.length).toEqual(2);
         expect(appointmentRequestData.providers[0].response).toEqual("ACCEPTED");
         expect(appointmentRequestData.providers[1].response).toEqual("ACCEPTED");
+    })
+
+    it('should update the provider responses for newly added providers', async () => {
+        let getByTextInDom = undefined;
+        let containerInDom = undefined;
+        let getByTestIdInDom = undefined;
+        act(() => {
+            const {container, getByText, queryByText, getByTestId} = renderWithReactIntl(
+                <AppContext.Provider value={{setViewDate: jest.fn()}}>
+                    renderWithReactIntl(<EditAppointment appConfig={config} appointmentUuid={'123tr5-7y65-4708-9fcc-8c98daba0ca9'}
+                                                         isRecurring="false"/>);
+                </AppContext.Provider>
+
+            );
+            getByTextInDom = getByText;
+            containerInDom = container;
+            getByTestIdInDom = getByTestId;
+        });
+        await flushPromises();
+
+        selectProvider(containerInDom, getByTextInDom, "Three", "Provider Three");
+
+        fireEvent.click(getByTextInDom('Update'));
+        await waitForElement(() => (containerInDom.querySelector('.popup-overlay')));
+        fireEvent.click(await getByTestIdInDom("update-confirm-button"));
+        await waitForElement(() => (containerInDom.querySelector('.popup-overlay')));
+
+        expect(getConflictsSpy).toHaveBeenCalled();
+        expect(saveAppointmentSpy).toHaveBeenCalled();
+
+        const appointmentRequestData = saveAppointmentSpy.mock.calls[0][0];
+        expect(appointmentRequestData.status).toEqual("Scheduled");
+        expect(appointmentRequestData.providers.length).toEqual(3);
+        expect(appointmentRequestData.providers[0].name).toEqual("Provider One");
+        expect(appointmentRequestData.providers[0].response).toEqual("ACCEPTED");
+        expect(appointmentRequestData.providers[1].name).toEqual("Provider Two");
+        expect(appointmentRequestData.providers[1].response).toEqual("AWAITING");
+        expect(appointmentRequestData.providers[2].name).toEqual("Provider Three");
+        expect(appointmentRequestData.providers[2].response).toEqual("AWAITING");
     })
 });

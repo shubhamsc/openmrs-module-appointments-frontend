@@ -1,9 +1,6 @@
 import {PROVIDER_RESPONSES} from "../constants";
 import {cloneDeep, each, find, isUndefined, map} from "lodash";
-
-const isActiveProvider = function (provider) {
-    return provider.response !== PROVIDER_RESPONSES.CANCELLED;
-};
+import {isActiveProvider} from "../helper";
 
 const updateProviderResponse = function (updatedProviders, appointmentRequest) {
     each(appointmentRequest.providers, function (providerInAppointment) {
@@ -18,7 +15,8 @@ const updateProviderResponse = function (updatedProviders, appointmentRequest) {
     });
 };
 
-const updateAppointmentStatusAndProviderResponse = async function (appointmentDetails, appointmentRequest) {
+const updateAppointmentStatusAndProviderResponse = async function (appointmentDetails, appointmentRequest,
+                                                                   existingProvidersUuids, isRescheduled) {
     const {default: getUpdatedStatusAndProviderResponse} = await import('./AppointmentStatusHandler');
     // TODO: set current provider uuid // appointmentDetails.service
     let currentProviderUuid = "";//$scope.currentProvider.uuid;
@@ -30,7 +28,7 @@ const updateAppointmentStatusAndProviderResponse = async function (appointmentDe
     }));
 
     const updatedStatusAndProviderResponse = getUpdatedStatusAndProviderResponse(allAppointmentDetails,
-        currentProviderUuid, [], false);
+        currentProviderUuid, existingProvidersUuids, isRescheduled);
     appointmentRequest.status = updatedStatusAndProviderResponse.status;
     updateProviderResponse(updatedStatusAndProviderResponse.providers, appointmentRequest);
 };
