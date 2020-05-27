@@ -133,6 +133,44 @@ const appointmentResponses = [
             "recurring": false
         }
     },
+    {
+        "data": {
+            "uuid": "45hj76-7y65-4708-9fcc-8c98daba0ca9",
+            "appointmentNumber": "0004",
+            "patient": {
+                "identifier": "IQ1114",
+                "name": "9DEC81BF 9DEC81C6",
+                "uuid": "fda50921-d5d5-4493-8de8-6ef54c9d4481"
+            },
+            "service": {
+                "appointmentServiceId": 1,
+                "name": "Ortho Requested",
+                "description": null,
+                "speciality": {name: 'test speciality', uuid: '8de35e75-20e0-11e7-a53f-5usc29e530d2'},
+                "startTime": "",
+                "endTime": "",
+                "maxAppointmentsLimit": null,
+                "durationMins": null,
+                "location": {"name": "Physiotherapy", "uuid": "8de35e75-20e0-11e7-a53f-000c29e530d2"},
+                "uuid": "7eb76991-cc67-45c1-9cb9-93d91113672b",
+                "color": "#00CED1",
+                "initialAppointmentStatus": "Requested",
+                "creatorName": null
+            },
+            "serviceType": {"duration": 30, "name": "1 session", "uuid": "50ac6a9c-158a-4743-a6b5-a4f9c9317007"},
+            "startDateTime": 253400569200000,
+            "endDateTime": 253400571000000,
+            "appointmentKind": "Scheduled",
+            "status": "Requested",
+            "providers": [{
+                "uuid": "ef3643ff-b6f7-4f27-8189-16689a821a9e",
+                "comments": null,
+                "response": "AWAITING",
+                "name": "Provider Two"
+            }],
+            "recurring": false
+        }
+    },
 ];
 
 export const saveOrUpdateAppointment = () => {

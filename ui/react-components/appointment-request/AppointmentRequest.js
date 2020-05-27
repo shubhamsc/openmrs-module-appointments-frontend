@@ -16,10 +16,8 @@ const updateProviderResponse = function (updatedProviders, appointmentRequest) {
 };
 
 const updateAppointmentStatusAndProviderResponse = async function (appointmentDetails, appointmentRequest,
-                                                                   existingProvidersUuids, isRescheduled) {
+                                                                   currentProviderUuid, existingProvidersUuids, isRescheduled) {
     const {default: getUpdatedStatusAndProviderResponse} = await import('./AppointmentStatusHandler');
-    // TODO: set current provider uuid // appointmentDetails.service
-    let currentProviderUuid = "";//$scope.currentProvider.uuid;
     const allAppointmentDetails = cloneDeep(appointmentRequest);
     allAppointmentDetails.service = appointmentDetails.service.value;
     allAppointmentDetails.providers = map(appointmentRequest.providers, provider => ({

@@ -49,5 +49,6 @@ function reactAddAppointmentController($rootScope, $location, $scope, $state, ng
     $scope.appointmentUuid = $state.current.url === '/:uuid?isRecurring' ? $stateParams.uuid : undefined;
     $scope.isRecurring = $stateParams.isRecurring;
     $scope.state = $state;
+    $scope.currentProvider = $rootScope.currentProvider;
     $scope.appointmentParams = $stateParams.appointment;
 }

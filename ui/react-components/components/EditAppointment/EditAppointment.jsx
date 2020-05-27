@@ -76,7 +76,7 @@ import updateAppointmentStatusAndProviderResponse from "../../appointment-reques
 
 const EditAppointment = props => {
 
-    const {appConfig, appointmentUuid, isRecurring, intl} = props;
+    const {appConfig, appointmentUuid, isRecurring, intl, currentProvider} = props;
 
     const {setViewDate} = React.useContext(AppContext);
 
@@ -261,7 +261,8 @@ const EditAppointment = props => {
 
     const checkAndUpdateAppointmentStatus = async function (appointmentRequest, isRecurring) {
         const appointmentRequestData = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
-        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData, existingProvidersUuids, isRescheduled(appointmentTimeBeforeEdit));
+        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData, currentProvider.uuid,
+            existingProvidersUuids, isRescheduled(appointmentTimeBeforeEdit));
     };
 
     const save = async appointmentRequest => {

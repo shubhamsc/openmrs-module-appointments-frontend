@@ -528,6 +528,7 @@ describe('Add Appointment', () => {
 
 describe('Add appointment with appointment request enabled', () => {
     const config = {enableAppointmentRequests: true, maxAppointmentProviders: 10};
+    const currentProvider = {uuid: "f9badd80-ab76-11e2-9e96-0800200c9a66"};
 
     const selectPatient = async (container, getByText) => {
         const targetPatient = '9DEC74AB 9DEC74B7 (IQ1110)';
@@ -606,7 +607,33 @@ describe('Add appointment with appointment request enabled', () => {
     it('should update the appointment status and provider responses if the AppointmentRequest is Enabled', async () => {
         const {container, getByText, queryByText} = renderWithReactIntl(
             <AppContext.Provider value={{setViewDate: jest.fn()}}>
-                <AddAppointment appConfig={config} appointmentParams={appointmentTime}/>
+                <AddAppointment appConfig={config} appointmentParams={appointmentTime} currentProvider={currentProvider}/>
+            </AppContext.Provider>
+
+        );
+        await selectPatient(container, getByText);
+        await selectService(container, getByText);
+        await selectProvider(container, getByText, "Two", "Provider Two");
+        await selectProvider(container, getByText, "Three", "Provider Three");
+
+        const button = getByText('Check and Save');
+        fireEvent.click(button);
+        await waitForElement(() => (container.querySelector('.popup-overlay')));
+
+        expect(getConflictsSpy).toHaveBeenCalled();
+        expect(saveAppointmentSpy).toHaveBeenCalled();
+
+        const appointmentRequestData = saveAppointmentSpy.mock.calls[0][0];
+        expect(appointmentRequestData.status).toEqual("Requested");
+        expect(appointmentRequestData.providers.length).toEqual(2);
+        expect(appointmentRequestData.providers[0].response).toEqual("AWAITING");
+        expect(appointmentRequestData.providers[1].response).toEqual("AWAITING");
+    });
+
+    it('should update the appointment status as Scheduled when current provider is part of appointment', async () => {
+        const {container, getByText, queryByText} = renderWithReactIntl(
+            <AppContext.Provider value={{setViewDate: jest.fn()}}>
+                <AddAppointment appConfig={config} appointmentParams={appointmentTime} currentProvider={currentProvider}/>
             </AppContext.Provider>
 
         );
@@ -623,9 +650,11 @@ describe('Add appointment with appointment request enabled', () => {
         expect(saveAppointmentSpy).toHaveBeenCalled();
 
         const appointmentRequestData = saveAppointmentSpy.mock.calls[0][0];
-        expect(appointmentRequestData.status).toEqual("Requested");
+        expect(appointmentRequestData.status).toEqual("Scheduled");
         expect(appointmentRequestData.providers.length).toEqual(2);
-        expect(appointmentRequestData.providers[0].response).toEqual("AWAITING");
+        expect(appointmentRequestData.providers[0].name).toEqual("Provider One");
+        expect(appointmentRequestData.providers[0].response).toEqual("ACCEPTED");
+        expect(appointmentRequestData.providers[1].name).toEqual("Provider Two");
         expect(appointmentRequestData.providers[1].response).toEqual("AWAITING");
     })
 });

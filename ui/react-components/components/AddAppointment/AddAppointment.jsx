@@ -60,7 +60,7 @@ import updateAppointmentStatusAndProviderResponse from "../../appointment-reques
 
 const AddAppointment = props => {
 
-    const {appConfig, intl, appointmentParams} = props;
+    const {appConfig, intl, appointmentParams, currentProvider} = props;
     const {setViewDate} = React.useContext(AppContext);
     const errorTranslations = getErrorTranslations(intl);
 
@@ -269,7 +269,7 @@ const AddAppointment = props => {
 
     const checkAndUpdateAppointmentStatus = async function (appointmentRequest, isRecurring) {
         const appointmentRequestData = isRecurring ? appointmentRequest.appointmentRequest : appointmentRequest;
-        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData, [], false);
+        await updateAppointmentStatusAndProviderResponse(appointmentDetails, appointmentRequestData, currentProvider.uuid, [], false);
     };
 
     const saveRecurringAppointments = async recurringAppointmentRequest => {
@@ -560,7 +560,8 @@ const AddAppointment = props => {
 AddAppointment.propTypes = {
     intl: PropTypes.object.isRequired,
     appConfig: PropTypes.object,
-    appointmentParams: PropTypes.object
+    appointmentParams: PropTypes.object,
+    currentProvider: PropTypes.object
 };
 
 export default injectIntl(AddAppointment);
