@@ -1,6 +1,6 @@
 'use strict';
-
-describe("AppointmentsCreateController", function () {
+//Commented since APpointments CreateController Should be removed
+xdescribe("AppointmentsCreateController", function () {
     var $scope, rootScope, controller, appointmentsServiceService, q, $window, appService, ngDialog, messagingService, $state,
         spinner, appointmentsService, patientService, $translate, appDescriptor, $stateParams, appointmentCreateConfig,
         appointmentContext, $http;
