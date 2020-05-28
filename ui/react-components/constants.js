@@ -15,8 +15,14 @@ export const RECURRING_APPOINTMENT_TYPE = "Recurring";
 export const WALK_IN_APPOINTMENT_TYPE = "WalkIn";
 export const SCHEDULED_APPOINTMENT_TYPE = "Scheduled";
 
-export const SCHEDULED_APPOINTMENT_STATUS = "Scheduled";
-export const CHECKED_IN_APPOINTMENT_STATUS = "CheckedIn";
+export const APPOINTMENT_STATUSES = {
+    "Requested": "Requested",
+    "Scheduled": "Scheduled",
+    "CheckedIn": "CheckedIn",
+    "Completed": "Completed",
+    "Missed": "Missed",
+    "Cancelled": "Cancelled"
+};
 
 export const RECURRENCE_TERMINATION_AFTER = "After";
 export const RECURRENCE_TERMINATION_ON = "On";
@@ -51,12 +57,4 @@ export const appointmentEndTimeProps = endTime => {
     return {...appointmentTimeProps, defaultValue: 'To', defaultTime: endTime, translationKey: 'APPOINTMENT_TIME_TO_LABEL'}
 };
 
-export const APPOINTMENT_STATUSES = {
-    "Requested": "Requested",
-    "Scheduled": "Scheduled",
-    "CheckedIn": "CheckedIn",
-    "Completed": "Completed",
-    "Missed": "Missed",
-    "Cancelled": "Cancelled"
-};
 

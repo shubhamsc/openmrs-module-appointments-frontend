@@ -48,7 +48,8 @@ AppointmentContainer .propTypes = {
     setViewDate: PropTypes.func.isRequired,
     state: PropTypes.object.isRequired,
     isCancel: PropTypes.bool,
-    appointmentParams: PropTypes.object
+    appointmentParams: PropTypes.object,
+    currentProvider: PropTypes.object
 };
 
 export default AppointmentContainer;
