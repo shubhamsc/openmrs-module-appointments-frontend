@@ -15,9 +15,20 @@ const updateProviderResponse = function (updatedProviders, appointmentRequest) {
     });
 };
 
+async function dynamicImportStatusHandler() {
+    /*
+    We are importing AppointmentStatusHandler dynamically so webpack doesn't bundle it in appointment.js.
+    This way it will treated as separate chunk and will be it's own JS file next to appointment.js
+    This is needed so that the AppointmentStatus strategy could be configured based on the implementation after deployment.
+    For more information check the docs:
+    https://bahmni.atlassian.net/wiki/spaces/BAH/pages/927432705/Appointment+Request#Deciding-the-status-of-Appointment-and-Provider-Response%3A
+    * */
+    return await import('./AppointmentStatusHandler');
+}
+
 const updateAppointmentStatusAndProviderResponse = async function (appointmentDetails, appointmentRequest,
                                                                    currentProviderUuid, existingProvidersUuids, isRescheduled) {
-    const {default: getUpdatedStatusAndProviderResponse} = await import('./AppointmentStatusHandler');
+    const {default: getUpdatedStatusAndProviderResponse} = await dynamicImportStatusHandler();
     const allAppointmentDetails = cloneDeep(appointmentRequest);
     allAppointmentDetails.service = appointmentDetails.service.value;
     allAppointmentDetails.providers = map(appointmentRequest.providers, provider => ({
