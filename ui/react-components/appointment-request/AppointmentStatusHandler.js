@@ -1,6 +1,14 @@
 import {APPOINTMENT_STATUSES, PROVIDER_RESPONSES} from "../constants";
 import {map, isEmpty, includes, cloneDeep, some} from "lodash";
 
+/*
+/*
+    Below, we are creating local variables for all the webpack import variables.
+    This is avoid seeing `lodash__WEBPACK_IMPORTED_MODULE_1__["map"]` in different places in code.
+    This will help to maintain readability since this file might need to be changed on the implementation after deployment.
+    For more information check the docs:
+    https://bahmni.atlassian.net/wiki/spaces/BAH/pages/927432705/Appointment+Request#Deciding-the-status-of-Appointment-and-Provider-Response%3A
+ */
 const appointmentStatusList = APPOINTMENT_STATUSES;
 const providerResponseList = PROVIDER_RESPONSES;
 const map_fn = map;
