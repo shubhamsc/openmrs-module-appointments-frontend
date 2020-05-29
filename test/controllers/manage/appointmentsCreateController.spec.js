@@ -1,6 +1,6 @@
 'use strict';
-//Commented since APpointments CreateController Should be removed
-xdescribe("AppointmentsCreateController", function () {
+
+describe("AppointmentsCreateController", function () {
     var $scope, rootScope, controller, appointmentsServiceService, q, $window, appService, ngDialog, messagingService, $state,
         spinner, appointmentsService, patientService, $translate, appDescriptor, $stateParams, appointmentCreateConfig,
         appointmentContext, $http;
@@ -24,9 +24,6 @@ xdescribe("AppointmentsCreateController", function () {
             getConfigValue: function (input) {
                 if (input === "patientSearchUrl") {
                     return "patientSearchUrl";
-                }
-                if (input === "enableAppointmentRequests"){
-                    return false;
                 }
                 else
                     return true;
@@ -59,24 +56,24 @@ xdescribe("AppointmentsCreateController", function () {
             };
         });
         return controller('AppointmentsCreateController', {
-            $scope: $scope,
-            $rootScope: rootScope,
-            $q: q,
-            $state: $state,
-            appointmentsServiceService: appointmentsServiceService,
-            messagingService: messagingService,
-            ngDialog: ngDialog,
-            appService: appService,
-            $window: $window,
-            spinner: spinner,
-            appointmentsService: appointmentsService,
-            patientService: patientService,
-            $translate: $translate,
-            $stateParams: $stateParams,
-            appointmentCreateConfig: appointmentCreateConfig,
-            appointmentContext: appointmentContext,
-            $http: $http
-        }
+                $scope: $scope,
+                $rootScope: rootScope,
+                $q: q,
+                $state: $state,
+                appointmentsServiceService: appointmentsServiceService,
+                messagingService: messagingService,
+                ngDialog: ngDialog,
+                appService: appService,
+                $window: $window,
+                spinner: spinner,
+                appointmentsService: appointmentsService,
+                patientService: patientService,
+                $translate: $translate,
+                $stateParams: $stateParams,
+                appointmentCreateConfig: appointmentCreateConfig,
+                appointmentContext: appointmentContext,
+                $http: $http
+            }
         );
     };
 
@@ -220,22 +217,22 @@ xdescribe("AppointmentsCreateController", function () {
             createController();
             $scope.createAppointmentForm = {$invalid: false};
             var cancelledAppointment = {
-                date: moment().toDate(),
-                startTime: '09:00 am',
-                endTime: '09:30 am',
-                patient: {uuid: 'patientUuid'},
-                service: {uuid: 'serviceUuid'},
-                status: 'Cancelled',
-                uuid: 'uuid'
-            },
-            newAppointment = {
-                date: moment().toDate(),
-                startTime: '09:00 am',
-                endTime: '09:30 am',
-                patient: {uuid: 'patientUuid'},
-                service: {uuid: 'serviceUuid'},
-                uuid: 'newUuid'
-            };
+                    date: moment().toDate(),
+                    startTime: '09:00 am',
+                    endTime: '09:30 am',
+                    patient: {uuid: 'patientUuid'},
+                    service: {uuid: 'serviceUuid'},
+                    status: 'Cancelled',
+                    uuid: 'uuid'
+                },
+                newAppointment = {
+                    date: moment().toDate(),
+                    startTime: '09:00 am',
+                    endTime: '09:30 am',
+                    patient: {uuid: 'patientUuid'},
+                    service: {uuid: 'serviceUuid'},
+                    uuid: 'newUuid'
+                };
             $scope.patientAppointments = [cancelledAppointment];
             $state.params = {};
             $scope.appointment = newAppointment;
@@ -248,22 +245,22 @@ xdescribe("AppointmentsCreateController", function () {
             createController();
             $scope.createAppointmentForm = {$invalid: false};
             var previousAppointment = {
-                date: moment().toDate(),
-                startTime: '09:15:00',
-                endTime: '12:20:00',
-                patient: {uuid: 'patientUuid'},
-                service: {uuid: 'serviceUuid'},
-                status: 'Scheduled',
-                uuid: 'uuid'
-            },
-            newAppointment = {
-                date: moment().toDate(),
-                startTime: '12:20:00',
-                endTime: '13:20:00',
-                patient: {uuid: 'patientUuid'},
-                service: {uuid: 'serviceUuid'},
-                uuid: 'newUuid'
-            };
+                    date: moment().toDate(),
+                    startTime: '09:15:00',
+                    endTime: '12:20:00',
+                    patient: {uuid: 'patientUuid'},
+                    service: {uuid: 'serviceUuid'},
+                    status: 'Scheduled',
+                    uuid: 'uuid'
+                },
+                newAppointment = {
+                    date: moment().toDate(),
+                    startTime: '12:20:00',
+                    endTime: '13:20:00',
+                    patient: {uuid: 'patientUuid'},
+                    service: {uuid: 'serviceUuid'},
+                    uuid: 'newUuid'
+                };
             previousAppointment = Bahmni.Appointments.Appointment.create(previousAppointment);
             $scope.patientAppointments = [previousAppointment];
             $state.params = {};
@@ -277,9 +274,9 @@ xdescribe("AppointmentsCreateController", function () {
             var patientAppointmentsData = [{
                 uuid: 'veryNewUuid'
             },
-            {
-                uuid: 'newUuid'
-            }];
+                {
+                    uuid: 'newUuid'
+                }];
             var patientAppointments = {
                 data: patientAppointmentsData
             };
@@ -982,12 +979,6 @@ xdescribe("AppointmentsCreateController", function () {
             expect($scope.isEditAllowed()).toBeTruthy();
         });
 
-        it('should allow edit for requested appointment if is of future date', function () {
-            appointmentContext.appointment = {startDateTime: moment().add(1, 'day').toDate(), status: 'Requested', uuid: 'appointmentUuid'};
-            createController();
-            expect($scope.isEditAllowed()).toBeTruthy();
-        });
-
         it('should allow edit for checked-in appointment if is of future date', function () {
             appointmentContext.appointment = {startDateTime: moment().add(1, 'day').toDate(), status: 'CheckedIn', uuid: 'appointmentUuid'};
             createController();
@@ -1042,7 +1033,7 @@ xdescribe("AppointmentsCreateController", function () {
     });
 
     it("should dropDown have times list which are having entered number in hours of the allowed list", function () {
-       createController();
+        createController();
         $scope.startTimes = ['10:00 am', '11:00 am', '12:00 pm', '01:00 pm', '02:00 pm'];
         $scope.showStartTimes = [];
         $scope.appointment= { startTime: 2 };
@@ -1229,8 +1220,8 @@ xdescribe("AppointmentsCreateController", function () {
             appointmentCreateConfig.providers = allAvailableProviders;
             appointmentContext.appointment = {startDateTime: moment().toDate(), status: 'Scheduled', providers: [{name: 'superman', uuid: '1'}, {name: 'mahmoud_h', uuid: '2'}]};
             rootScope = {
-            currentUser: {privileges: [{name: Bahmni.Appointments.Constants.privilegeOwnAppointments}], uuid: '3'},
-            currentProvider: {uuid: '3'}};
+                currentUser: {privileges: [{name: Bahmni.Appointments.Constants.privilegeOwnAppointments}], uuid: '3'},
+                currentProvider: {uuid: '3'}};
             createController();
 
             expect($scope.isFieldEditNotAllowed()).toBeTruthy();
@@ -1259,124 +1250,5 @@ xdescribe("AppointmentsCreateController", function () {
 
             expect($scope.isFieldEditNotAllowed()).toBeTruthy();
         });
-    });
-
-    describe('save', function () {
-        it('should update the appointment status and provider responses if the AppointmentRequest is Enabled', function () {
-            appDescriptor.getConfigValue = function (input) {
-                return input === "enableAppointmentRequests" ? true : undefined;
-            };
-            $scope.createAppointmentForm = {$invalid: false};
-            createController();
-            $scope.patientAppointments = [];
-            $state.params = {};
-            $scope.currentProvider = {uuid:'xyz0'};
-            $scope.appointment = {
-                service: {name: 'Cardiology', initialAppointmentStatus:'Requested'},
-                patient: {uuid: 'patientUuid'},
-                date: new Date('1970-01-01T11:30:00.000Z'),
-                startTime: '10:15:00',
-                endTime: '12:20:00',
-                status: 'Scheduled',
-                providers: [{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'ACCEPTED'}]
-            };
-            $scope.save();
-            expect($scope.validatedAppointment.status).toBe('Requested');
-            expect($scope.validatedAppointment.providers[0].response).toBe('AWAITING');
-            expect($scope.validatedAppointment.providers[1].response).toBe('AWAITING');
-        })
-
-        it('should not update the appointment status and provider responses for edits if time is not changed', function () {
-            appDescriptor.getConfigValue = function (input) {
-                return input === "enableAppointmentRequests" ? true : undefined;
-            };
-            const startDateTime = 1574566860000;
-            const endDateTime = 1574568660000;
-            appointmentContext.appointment = { uuid: 'appointmentUuid', startDateTime: startDateTime, endDateTime: endDateTime
-                ,providers: [{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'ACCEPTED'}]
-            };
-            $scope.createAppointmentForm = {$invalid: false};
-            createController();
-            $state.params = {};
-            $scope.currentProvider = {uuid:'xyz0'};
-            $scope.appointment = {
-                uuid: 'appointmentUuid',
-                service: {name: 'Cardiology', initialAppointmentStatus:'Requested'},
-                patient: {uuid: 'patientUuid'},
-                date: new Date(moment(startDateTime)),
-                startTime: moment(startDateTime).format('hh:mm a'),
-                endTime: moment(endDateTime).format('hh:mm a'),
-                status: 'Scheduled',
-                providers: [{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'ACCEPTED'}]
-            };
-            $scope.save();
-            expect($scope.validatedAppointment.status).toBe("Scheduled");
-            expect($scope.validatedAppointment.providers[0].response).toBe('ACCEPTED');
-            expect($scope.validatedAppointment.providers[1].response).toBe('ACCEPTED');
-        });
-
-        it('should update the appointment status and existing provider responses for edits if time has been changed', function () {
-            appDescriptor.getConfigValue = function (input) {
-                return input === "enableAppointmentRequests" ? true : undefined;
-            };
-            const startDateTime = 1574566860000;
-            const endDateTime = 1574568660000;
-            appointmentContext.appointment = {
-                uuid: 'appointmentUuid', startDateTime: startDateTime, endDateTime:endDateTime,
-                status: 'Scheduled',
-                providers: [{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'ACCEPTED'}]
-            };
-
-            $scope.createAppointmentForm = {$invalid: false};
-            createController();
-            $state.params = {};
-            $scope.currentProvider = {uuid:'xyz0'};
-            $scope.appointment = {
-                uuid: 'appointmentUuid',
-                service: {name: 'Cardiology', initialAppointmentStatus:'Requested'},
-                patient: {uuid: 'patientUuid'},
-                date: new Date(moment(startDateTime)),
-                startTime: moment(startDateTime).add(10, 'minutes').format('hh:mm a'),
-                endTime: moment(endDateTime).add(10, 'minutes').format('hh:mm a'),
-                status: 'Scheduled',
-                providers: [{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'ACCEPTED'}]
-            };
-            $scope.save();
-            expect($scope.validatedAppointment.status).toBe('Requested');
-            expect($scope.validatedAppointment.providers[0].response).toBe('AWAITING');
-            expect($scope.validatedAppointment.providers[1].response).toBe('AWAITING');
-        })
-
-        it('should update the response for new providers responses for edits even if time is not changed', function () {
-            appDescriptor.getConfigValue = function (input) {
-                return input === "enableAppointmentRequests" ? true : undefined;
-            };
-            const startDateTime = 1574566860000;
-            const endDateTime = 1574568660000;
-            appointmentContext.appointment = { uuid: 'appointmentUuid',
-                status: 'Scheduled',
-                startDateTime: startDateTime, endDateTime: endDateTime
-                , providers:[{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'AWAITING'}]};
-            $scope.createAppointmentForm = {$invalid: false};
-            createController();
-            $state.params = {};
-            $scope.currentProvider = {uuid:'xyz0'};
-            $scope.appointment = {
-                uuid: 'appointmentUuid',
-                service: {name: 'Cardiology', initialAppointmentStatus:'Requested'},
-                patient: {uuid: 'patientUuid'},
-                date: new Date(moment(startDateTime)),
-                startTime: moment(startDateTime).format('hh:mm a'),
-                endTime: moment(endDateTime).format('hh:mm a'),
-                status: 'Scheduled',
-                providers:[{uuid:'xyz1', response:'ACCEPTED'}, {uuid:'xyz2', response:'AWAITING'}, {uuid:'xyz3', response:'ACCEPTED'}]
-            };
-            $scope.save();
-            expect($scope.validatedAppointment.status).toBe('Scheduled');
-            expect($scope.validatedAppointment.providers[0].response).toBe('ACCEPTED');
-            expect($scope.validatedAppointment.providers[1].response).toBe('AWAITING');
-            expect($scope.validatedAppointment.providers[2].response).toBe('AWAITING');
-        })
-
     });
 });
